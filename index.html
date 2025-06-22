@@ -384,23 +384,25 @@
     max-width: 600px;
   }
 
+  @media (max-width: 768px) {
   #right-panel {
-    position: fixed !important;  /* 강제 적용 */
-    bottom: 0;
-    left: 0;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
     width: 100% !important;
-    height: 160px;
+    height: 160px !important;
     box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
     z-index: 999;
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
-    flex-direction: row; /* 가로 배치 */
+    flex-direction: row;
     gap: 8px;
     padding: 15px;
     border-radius: 0;
   }
-
+  }
+  
   #inventory {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
