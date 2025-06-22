@@ -32,6 +32,10 @@
     gap: 30px;
   }
 
+  .hidden {
+  display: none;
+}
+
   #center-panel {
     width: 360px;
     align-items: center;
@@ -711,6 +715,10 @@ function upgradeDurability() {
   function drillBroken() {
     drill.classList.add("broken");
     alert("💥 드릴이 부서졌습니다! 땅이 복구됩니다.");
+    const panel = document.querySelector('#left-panel');
+  if (window.innerWidth > 768) {
+    panel.classList.add("hidden");
+  }
     setTimeout(() => {
       createGround();
     }, 1000);
