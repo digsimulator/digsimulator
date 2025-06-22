@@ -42,7 +42,7 @@
   }
 
   #right-panel {
-    width: 700px;
+    width: 580px;
   }
 
   /* 제목 */
@@ -120,10 +120,12 @@
     border-radius: 0;
   }
 
-  #inventory {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 8px;
-  }
+#inventory {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);  /* 무조건 5개씩 */
+  gap: 8px;
+  justify-items: center;
+}
 
   .inventory-slot {
     height: 90px;
@@ -446,7 +448,7 @@
 
 
   const MAX_STACK = 30;
-  const INVENTORY_SIZE = 30;
+  const INVENTORY_SIZE = 25;
 
   // 강도 업그레이드 단계별 정보 (레벨 0부터 시작)
   const DrillPowerUpgrades = [
