@@ -359,60 +359,50 @@
   -webkit-mask: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6 10.793l-3.146-3.147-1.414 1.414L6 13.621l8-8-1.414-1.414z"/></svg>') no-repeat center;
 }
 
+/* 모바일(<=768px)에서 right-panel 크기 left, center와 같게 */
 @media (max-width: 768px) {
-  html, body {
-    height: auto;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body {
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    padding-bottom: 180px;  /* 💡 이게 핵심! */
-  }
-
-  #left-panel, #center-panel {
+  #left-panel, #center-panel, #right-panel {
     width: 90%;
     max-width: 600px;
-  }
-
-  #center-panel {
-    margin-bottom: 0;  /* 중복 여백 제거 */
   }
 
   #right-panel {
     position: fixed;
     bottom: 0;
-    left: 0;
-    width: 100%;
+    left: 50%;
+    transform: translateX(-50%);
     height: 160px;
-    background: #fff;
+    padding: 15px;
     box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-    z-index: 999;
+    border-radius: 0;
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
     flex-direction: row;
     gap: 8px;
-    padding: 10px;
-    border-radius: 0;
+    z-index: 999;
   }
 
+  /* 인벤토리는 가로 5칸 고정, 넘칠 때 스크롤 */
   #inventory {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    width: 100%;
+    gap: 8px;
+    justify-items: center;
+    overflow-x: auto; /* 넘칠 때 가로 스크롤 가능 */
   }
 
   .inventory-slot {
+    width: 70px;  /* 기본보다 작게 조절 */
     height: 70px;
-    width: 70px;
     font-size: 12px;
   }
+
+  #center-panel {
+    margin-bottom: 180px; /* fixed 패널 여백 확보 */
+  }
 }
+
 
 
 </style>
