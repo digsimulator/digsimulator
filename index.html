@@ -87,32 +87,56 @@
   }
 
   /* 드릴 */
-  #drill {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(145deg, #636e72, #2d3436);
-    border-radius: 50%;
-    text-align: center;
-    line-height: 60px;
-    font-weight: 900;
-    color: white;
-    top: 50px;
-    left: 130px;
-    cursor: pointer;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.45);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    user-select: none;
-    z-index: 10;
-  }
-  #drill:hover {
-    transform: scale(1.15);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.65);
-  }
-  #drill.broken {
-    background: linear-gradient(145deg, #c0392b, #e74c3c);
-    box-shadow: 0 0 20px #e74c3c;
-  }
+#drill {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-top: 60px solid #636e72; /* 삼각형 모양 드릴 */
+  top: 50px;
+  left: 130px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  z-index: 10;
+}
+
+/* 애니메이션 추가 (선택) */
+#drill:hover {
+  transform: rotate(5deg) scale(1.05);
+}
+
+/* 부서졌을 때 효과 */
+#drill.broken {
+  border-top-color: #e74c3c;
+  box-shadow: 0 0 20px red;
+}
+
+/*드릴 스킨임*/
+#drill.skin-fire {
+  border-top-color: orangered;
+  filter: drop-shadow(0 0 10px orange);
+  animation: fireGlow 1s infinite;
+}
+
+@keyframes fireGlow {
+  0% { filter: drop-shadow(0 0 5px orange); }
+  50% { filter: drop-shadow(0 0 15px red); }
+  100% { filter: drop-shadow(0 0 5px orange); }
+}
+
+#drill.skin-ice {
+  border-top-color: rgb(38, 111, 221);
+  filter: drop-shadow(0 0 10px rgb(80, 189, 223));
+  animation: fireGlow 1s infinite;
+}
+
+@keyframes fireGlow {
+  0% { filter: drop-shadow(0 0 5px rgb)(38, 111, 221); }
+  50% { filter: drop-shadow(0 0 15px rgb)(80, 189, 223); }
+  100% { filter: drop-shadow(0 0 5px rgb)(38, 111, 221); }
+}
+
 
   /* 땅 레이어 */
   #ground {
@@ -131,6 +155,7 @@
   .dirt { background: #a0522d; }
   .gravel { background: #636e72; }
   .stone { background: #2d3436; }
+  .ice { background: rgb(52, 119, 173)}
   .destroyed { background: #b2bec3 !important; }
   .bedrock { background: #000 !important; }
   .broken { background: #c0392b !important; }
@@ -212,6 +237,75 @@
   .inventory-slot:hover {
     background-color: #dff1ff;
   }
+
+  #encyclopedia-panel {
+  margin-top: 30px;
+  background: #f7f9fc;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: inset 0 0 10px #dfe6e9;
+  font-size: 15px;
+  color: #2d3436;
+}
+
+.material-entry {
+  padding: 10px 8px;
+  border-bottom: 1px solid #dcdde1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.material-entry:last-child {
+  border-bottom: none;
+}
+
+.material-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.material-info {
+  font-size: 13px;
+  color: #636e72;
+}
+
+/* 스킨 목록 전체 박스 */
+#skin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* 스킨 항목 */
+.skin-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #dfe6e9;
+  box-shadow: inset 0 0 8px #b2bec3;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+.skin-item:hover {
+  background-color: #c1d4ff;
+}
+
+/* 체크 표시 */
+.skin-item .checkmark {
+  width: 20px;
+  height: 20px;
+  background-color: #27ae60; /* 초록 */
+  mask: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6 10.793l-3.146-3.147-1.414 1.414L6 13.621l8-8-1.414-1.414z"/></svg>') no-repeat center;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6 10.793l-3.146-3.147-1.414 1.414L6 13.621l8-8-1.414-1.414z"/></svg>') no-repeat center;
+}
+
+
 </style>
 
 </head>
@@ -227,6 +321,22 @@
       <button onclick="upgradeDurability()">🛠 내구도 업그레이드</button>
       <div id="durabilityUpgradeReq"></div> <!-- 재료 표시 영역 -->
     </div>
+    <div class="upgrade-block">
+  <button onclick="openSkinShop()">🎨 드릴 스킨 상점</button>
+</div>
+
+<div id="skin-shop" style="display:none; margin-top: 20px;">
+  <h2>🛍️ 스킨 상점</h2>
+  <div class="upgrade-block">
+    <p><strong>🔥 불꽃 스킨</strong><br>고대흙 x5, 루비 x5 엄청큰자갈 x1</p>
+    <button onclick="buyDrillSkin('fire')">구매</button>
+    <p><strong>🧊 얼음 스킨</strong><br>차가운얼음 x1, 따뜻한얼음 x1, 고드름 x1, 드라이아이스 x1, 눈송이 x1, 눈사람 x1</p>
+    <button onclick="buyDrillSkin('ice')">구매</button>
+  </div>
+</div>
+
+
+
   </div>
 </div>
 
@@ -240,7 +350,7 @@
     💰: <span id="money">0</span>
   </div>
   <div id="game">
-    <div id="drill">🔩</div>
+    <div id="drill"></div>
     <div id="ground"></div>
   </div>
 </div>
@@ -248,6 +358,14 @@
 <div id="right-panel">
   <h2>--- 인벤토리 ---</h2>
   <div id="inventory"></div>
+
+        <div id="encyclopedia-panel">
+  <h2>--- 최근 발견한 광물 정보 ---</h2>
+  <div id="material-list"></div>
+</div>
+
+  <h2 style="margin-top: 40px;">🎨 드릴 스킨 목록</h2>
+  <div id="skin-list"></div>
 </div>
 
 <script>
@@ -260,9 +378,11 @@
   const inventoryUI = document.getElementById("inventory");
   const powerUpgradeReqUI = document.getElementById("powerUpgradeReq");
   const durabilityUpgradeReqUI = document.getElementById("durabilityUpgradeReq");
+  const discoveredMaterials = new Set();
+
 
   const DRILL_SPEED = 2;
-  const DRILL_HEIGHT = 50;
+  const DRILL_HEIGHT = 60;
   let MAX_DURABILITY = 9;
   let drillPower = 1;
   let money = 0;
@@ -270,15 +390,25 @@
   let durability = MAX_DURABILITY;
   let layers = [];
   let inventory = [];
+  let lastMinedMaterial = null;
 
-  const MAX_STACK = 10;
+
+  const MAX_STACK = 30;
   const INVENTORY_SIZE = 30;
 
   // 강도 업그레이드 단계별 정보 (레벨 0부터 시작)
   const DrillPowerUpgrades = [
     { name: "power1", powerAddition: 1, need: { 흙: 10, 부싯돌: 1 }, money: 10 },
-    { name: "power2", powerAddition: 3, need: { 흙: 20, 부싯돌: 5, 고대흙: 1, }, money: 30 },
-    { name: "power3", powerAddition: 3, need: { 고대흙: 3, 자갈: 20, 석탄: 1}, money: 1 },
+    { name: "power2", powerAddition: 1, need: { 흙: 18, 부싯돌: 4, 고대흙: 1 }, money: 10 },
+    { name: "power3", powerAddition: 2, need: { 흙: 24, 부싯돌: 8, 고대흙: 5, }, money: 50 },
+    { name: "power4", powerAddition: 2, need: { 고대흙: 3, 자갈: 20, 석탄: 1}, money: 100 },
+    { name: "power5", powerAddition: 3, need: { 자갈: 25, 석탄: 5, 은: 3, }, money: 200 },
+    { name: "power6", powerAddition: 3, need: { 고대흙: 2, 자갈: 30, 석탄: 15, 은: 15, }, money: 300 },
+    { name: "power7", powerAddition: 4, need: { 석탄: 20, 은: 20, 돌: 3, 철: 1}, money: 400 },
+
+
+
+
     // 필요한 만큼 추가 가능
   ];
   let currentPowerLevel = 0;
@@ -287,7 +417,11 @@
   // 내구도 업그레이드 단계별 정보
   const DurabilityUpgrades = [
     { name: "durability1", durabilityAddition: 9, money: 20 },
-    { name: "durability2", durabilityAddition: 9, money: 100 },
+    { name: "durability2", durabilityAddition: 9, money: 50 },
+    { name: "durability4", durabilityAddition: 12, money: 80 },
+    { name: "durability3", durabilityAddition: 9, money: 240 },
+    { name: "durability4", durabilityAddition: 12, money: 510 },
+    { name: "durability4", durabilityAddition: 12, money: 700 },
     // 추가 가능
   ];
   let currentDurabilityLevel = 0;
@@ -303,15 +437,26 @@
     ],
     Gravel: [
       { item: "자갈", chance: 0.6 },
-      { item: "석탄", chance: 0.25 },
-      { item: "은", chance: 0.15 }
+      { item: "석탄", chance: 0.24 },
+      { item: "은", chance: 0.15 },
+      { item: "엄청큰자갈", chance: 0.1 },
+
     ],
     Stone: [
       { item: "돌", chance: 0.6 },
       { item: "철", chance: 0.2 },
       { item: "다이아몬드", chance: 0.1 },
       { item: "루비", chance: 0.1 }
+    ],
+    Ice: [
+      { item: "차가운얼음", chance: 0.4 },
+      { item: "따뜻한얼음", chance: 0.2 },
+      { item: "고드름", chance: 0.125 },
+      { item: "드라이아이스", chance: 0.1 },
+      { item: "눈송이", chance: 0.075 },
+      { item: "눈사람", chance: 0.05 }
     ]
+    
   };
 
   // 광물 가격(돈 환산)
@@ -325,7 +470,14 @@
     돌: { materialName: "돌", diggedPrice: 2 },
     철: { materialName: "철", diggedPrice: 5 },
     다이아몬드: { materialName: "다이아몬드", diggedPrice: 10 },
-    루비: { materialName: "루비", diggedPrice: 15 }
+    루비: { materialName: "루비", diggedPrice: 15 },
+    엄청큰자갈: { materialName: "엄청큰자갈", diggedPrice: 2 },
+    차가운얼음: { materialName: "차가운얼음", diiggedPrice: 5},
+    따뜻한얼음: { materialName: "따뜻한얼음", diiggedPrice: 10},
+    고드름: { materialName: "고드름", diiggedPrice: 15},
+    드라이아이스: { materialName: "드라이아이스", diiggedPrice: 20},
+    눈송이: { materialName: "눈송이", diiggedPrice: 30},
+    눈사람: { materialName: "눈사람", diiggedPrice: 50}
   };
 
   // 광물 등장 시 인벤토리에 추가 및 돈 획득
@@ -333,6 +485,7 @@
     for (let slot of inventory) {
       if (slot.item === item && slot.count < MAX_STACK) {
         slot.count++;
+        lastMinedMaterial = item;
         updateInventoryUI();
         if (DigPrices[item]) money += DigPrices[item].diggedPrice;
         updateUI();
@@ -341,9 +494,17 @@
     }
     if (inventory.length < INVENTORY_SIZE) {
       inventory.push({ item, count: 1 });
+      lastMinedMaterial = item;
       updateInventoryUI();
+      if (!discoveredMaterials.has(item)) {
+      discoveredMaterials.add(item);
+      alert(`🌟 새로운 광물 발견: ${item}!`);
+      renderMaterialEncyclopedia();
+}
+
       if (DigPrices[item]) money += DigPrices[item].diggedPrice;
       updateUI();
+
     }
   }
 
@@ -367,7 +528,8 @@
     const totalLayers = [
       { count: 10, type: "Dirt", hp: 3 },
       { count: 30, type: "Gravel", hp: 5 },
-      { count: 30, type: "Stone", hp: 7 }
+      { count: 30, type: "Stone", hp: 9 },
+      { count: 20, type: "Ice", hp: 20}
     ];
 
     totalLayers.forEach(({ count, type, hp }) => {
@@ -464,16 +626,31 @@ function upgradeDurability() {
 
   // 인벤토리 UI 업데이트
   function updateInventoryUI() {
-    inventoryUI.innerHTML = "";
-    for (let i = 0; i < INVENTORY_SIZE; i++) {
-      const slot = document.createElement("div");
-      slot.className = "inventory-slot";
-      if (inventory[i]) {
-        slot.textContent = `${inventory[i].item} x${inventory[i].count}`;
-      }
-      inventoryUI.appendChild(slot);
+  inventoryUI.innerHTML = "";
+  for (let i = 0; i < INVENTORY_SIZE; i++) {
+    const slot = document.createElement("div");
+    slot.className = "inventory-slot";
+
+    if (inventory[i]) {
+      const { item, count } = inventory[i];
+      slot.textContent = `${item} x${count}`;
+
+      // 클릭 시 아이템 버리기
+      slot.addEventListener("click", () => {
+        if (confirm(`${item}을(를) 1개 버릴까요?`)) {
+          inventory[i].count--;
+          if (inventory[i].count <= 0) {
+            inventory.splice(i, 1); // 슬롯 완전히 제거
+          }
+          updateInventoryUI();
+        }
+      });
     }
+
+    inventoryUI.appendChild(slot);
   }
+}
+
 
   // 드릴 떨어뜨리기 동작
   function dropDrill() {
@@ -609,6 +786,229 @@ function upgradeDurability() {
 
   createGround();
   updateUI();
+
+  const materialData = {
+  흙: {
+    description: "가장 흔한 재료입니다.",
+    rarity: "★"
+  },
+  부싯돌: {
+    description: "흙에서 낮은 확률로 나오는 돌.",
+    rarity: "★★"
+  },
+  고대흙: {
+    description: "시간이 멈춘 듯한 흙.",
+    rarity: "★★★"
+  },
+  자갈: {
+    description: "흔한 자갈 부싯돌보단 딱딱.",
+    rarity: "★"
+  },
+  석탄: {
+    description: "자갈보다 자주 쓰이는 돌덩이.",
+    rarity: "★★"
+  },
+  은: {
+    description: "반짝이고 비싼 조각",
+    rarity: "★★★"
+  },
+  돌: {
+    description: "단단한 돌. 다른 광물보다 튼튼해보임",
+    rarity: "★"
+  },
+  철: {
+    description: "강한 재료. 돌보다 단단",
+    rarity: "★★★"
+  },
+  다이아몬드: {
+    description: "반짝이면서도 철보다 단단한 광물.",
+    rarity: "★★★★"
+  },
+  루비: {
+    description: "붉은 다이아몬드. 고급져보임",
+    rarity: "★★★★★"
+  },
+  엄청큰자갈: {
+    description: "그냥 큰 자갈 매우 희귀하다.",
+    rarity: "★★★★★★"
+  },
+   차가운얼음: {
+    description: "말 그대로 차가운 얼음.",
+    rarity: "★★★"
+  },
+   따뜻한얼음: {
+    description: "말 그대호 따뜻한 얼음.",
+    rarity: "★★★★"
+  },
+   고드름: {
+    description: "그냥 큰 자갈 매우 희귀하다.",
+    rarity: "★★★★"
+  },
+   드라이아이스: {
+    description: "그냥 큰 자갈 매우 희귀하다.",
+    rarity: "★★★★★"
+  },
+   눈송이: {
+    description: "그냥 큰 자갈 매우 희귀하다.",
+    rarity: "★★★★★★"
+  },
+   눈사람: {
+    description: "그냥 큰 자갈 매우 희귀하다.",
+    rarity: "★★★★★★"
+  },
+  
+
+};
+
+//최근 광물 정보 표시
+function renderMaterialEncyclopedia() {
+  const list = document.getElementById("material-list");
+  list.innerHTML = "";
+
+  if (lastMinedMaterial && materialData[lastMinedMaterial]) {
+    const data = materialData[lastMinedMaterial];
+    const div = document.createElement("div");
+    div.className = "material-entry";
+    div.innerHTML = `
+      <div>
+        <div class="material-name">${lastMinedMaterial}</div>
+        <div class="material-info">${data.description}</div>
+      </div>
+      <div class="material-info">희귀도: ${data.rarity}</div>
+    `;
+    list.appendChild(div);
+  }
+}
+
+
+
+
+// =============================
+// 드릴 스킨 샵 열기
+// =============================
+function openSkinShop() {
+  const shop = document.getElementById("skin-shop");
+  shop.style.display = shop.style.display === "none" ? "block" : "none";
+}
+
+// =============================
+// 현재 스킨 상태 및 보유 목록
+// =============================
+let ownedSkins = ["none"]; // 항상 기본 스킨 소유
+let currentSkin = "none";
+
+// =============================
+// 모든 스킨 목록
+// =============================
+const availableSkins = [
+  { id: "none", name: "기본 스킨" },
+  { id: "fire", name: "🔥 불꽃 스킨" },
+  { id: "ice", name: "❄️ 얼음 스킨" },
+];
+
+// =============================
+// 드릴에 스킨 적용
+// =============================
+function applyDrillSkin(skinId) {
+  currentSkin = skinId;
+
+  const drill = document.getElementById("drill");
+  if (!drill) return;
+
+  drill.className = "drill";
+  if (skinId !== "none") {
+    drill.classList.add("skin-" + skinId);
+  }
+
+  renderSkinList();
+}
+
+// =============================
+// 스킨 샵 목록 렌더링
+// =============================
+function renderSkinList() {
+  const skinList = document.getElementById("skin-list");
+  skinList.innerHTML = "";
+
+  for (const skin of availableSkins) {
+    const div = document.createElement("div");
+    div.className = "skin-item";
+    div.textContent = skin.name;
+
+    // 구매 여부에 따라 스타일 조정
+    if (!ownedSkins.includes(skin.id)) {
+      div.style.opacity = 0.5;
+      div.style.cursor = "not-allowed";
+    } else {
+      div.addEventListener("click", () => {
+        applyDrillSkin(skin.id);
+      });
+    }
+
+    // 체크마크
+    if (skin.id === currentSkin) {
+      const check = document.createElement("div");
+      check.className = "checkmark";
+      div.appendChild(check);
+    }
+
+    skinList.appendChild(div);
+  }
+}
+
+// =============================
+// 스킨 구매 처리
+// =============================
+function buyDrillSkin(skinName) {
+  const skinRequirements = {
+    fire: { 엄청큰자갈: 1 ,고대흙: 5 ,루비: 5 },
+    ice: { 차가운얼음: 1, 따뜻한얼음: 1, 고드름: 1, 드라이아이스: 1, 눈송이: 1, 눈사람: 1 },
+  };
+
+  const skinMessages = {
+    fire: "🔥 불꽃 드릴 스킨이 구매되고 적용되었습니다!",
+    ice: "🧊 얼음 드릴 스킨이 구매되고 적용되었습니다!",
+  };
+
+  const need = skinRequirements[skinName];
+  if (!need) {
+    alert("존재하지 않는 스킨입니다.");
+    return;
+  }
+
+  // 재료 확인
+  for (const [item, count] of Object.entries(need)) {
+    const found = inventory.find(i => i.item === item);
+    if (!found || found.count < count) {
+      alert(`${item}이(가) 부족합니다.`);
+      return;
+    }
+  }
+
+  // 재료 차감
+  for (const [item, count] of Object.entries(need)) {
+    const found = inventory.find(i => i.item === item);
+    found.count -= count;
+    if (found.count <= 0) {
+      inventory = inventory.filter(i => i.count > 0);
+    }
+  }
+
+  updateInventoryUI();
+
+  // 보유 목록에 추가
+  if (!ownedSkins.includes(skinName)) {
+    ownedSkins.push(skinName);
+  }
+
+  // 적용
+  applyDrillSkin(skinName);
+  alert(skinMessages[skinName]);
+  renderSkinList();
+  renderMaterialEncyclopedia?.(); // 있으면 실행
+}
+
+
 </script>
 
 </body>
