@@ -1009,16 +1009,15 @@ function buyDrillSkin(skinName) {
 }
 
 function destroyDrill() {
-  // 기존 드릴 파괴 로직...
   alert("드릴이 파괴되었습니다! 땅이 복구됩니다.");
-
-  // 모바일이 아닌 경우에만 패널 숨김
+  // 모바일이면 숨기지 않도록
   if (window.innerWidth > 768) {
     document.querySelector('#left-panel').style.display = 'none';
   }
-
-  // 땅 복구 로직 추가
-  resetGround();
+  setTimeout(() => {
+    createGround();
+    document.querySelector('#left-panel').style.display = '';
+  }, 1000);
 }
 
 
