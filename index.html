@@ -360,27 +360,35 @@
 }
 
 @media (max-width: 768px) {
-  /* left, center 패널 너비 통일 */
-  #left-panel, #center-panel, #right-panel {
+  body {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+  }
+
+  #left-panel, #center-panel {
     width: 90%;
-    max-width: 600px;  /* 필요시 최대값 맞추기 */
+    max-width: 600px;
   }
 
   #right-panel {
     position: fixed !important;
     bottom: 0 !important;
-    left: 50%;  /* 화면 절반에서 시작 */
-    transform: translateX(-50%); /* 중앙 정렬 */
-    height: 160px !important;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 600px;
+    height: 140px !important;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
     z-index: 999;
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
     flex-direction: row;
-    gap: 8px;
-    padding: 15px;
+    gap: 6px;
+    padding: 10px;
     border-radius: 0;
+    background: white;
   }
 
   #inventory {
@@ -391,13 +399,13 @@
   }
 
   .inventory-slot {
-    height: 70px;  /* 크기 줄임 */
-    width: 70px;
-    font-size: 12px;
+    height: 60px;
+    width: 60px;
+    font-size: 11px;
   }
 
   #center-panel {
-    margin-bottom: 180px;
+    margin-bottom: 180px; /* 이걸 늘려서 가리지 않도록 함 */
   }
 }
 
