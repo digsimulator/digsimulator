@@ -343,7 +343,7 @@
 
 <div id="center-panel">
   <h1>땅파기 시뮬 (Made by 범서)</h1>
-  <h1>Ver 1.96 pre release</h1>
+  <h1>Ver 1.12 pre release</h1>
   <div id="status">
     내구도: <span id="durability">9</span> |
     강도: <span id="power">1</span> |
@@ -1007,6 +1007,20 @@ function buyDrillSkin(skinName) {
   renderSkinList();
   renderMaterialEncyclopedia?.(); // 있으면 실행
 }
+
+function destroyDrill() {
+  // 기존 드릴 파괴 로직...
+  alert("드릴이 파괴되었습니다! 땅이 복구됩니다.");
+
+  // 모바일이 아닌 경우에만 패널 숨김
+  if (window.innerWidth > 768) {
+    document.querySelector('.left-panel').style.display = 'none';
+  }
+
+  // 땅 복구 로직 추가
+  resetGround();
+}
+
 
 
 </script>
