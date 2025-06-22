@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>드릴 업그레이드 시스템</title>
+ <style>
+  /* 배경 및 기본 폰트 */
+  body {
+    background: linear-gradient(135deg, #74b9ff, #a29bfe);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    color: #2d3436;
+    user-select: none;
+  }
+
+  /* 좌/중/우 패널 공통 스타일 */
+  #left-panel, #center-panel, #right-panel {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    padding: 25px 30px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #left-panel {
+    width: 220px;
+    gap: 30px;
+  }
+
+  #center-panel {
+    width: 360px;
+    align-items: center;
+  }
+
+  #right-panel {
+    width: 700px;
+  }
+
+  /* 제목 */
+  h1, h2 {
+    font-weight: 700;
+    margin: 0 0 25px 0;
+    color: #0984e3;
+    text-align: center;
+    letter-spacing: 1px;
+    font-size: 25px
+  }
+
+  /* 상태창 */
+  #status {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #636e72;
+    user-select: text;
+  }
+
+  /* 게임 영역 */
+  #game {
+    position: relative;
+    width: 320px;
+    height: 900px;
+    border-radius: 15px;
+    border: 3px solid #74b9ff;
+    background: #dfe6e9;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: inset 0 0 15px #b2bec3;
+    scrollbar-width: thin;
+    scrollbar-color: #74b9ff #dfe6e9;
+  }
+  #game::-webkit-scrollbar {
+    width: 10px;
+  }
+  #game::-webkit-scrollbar-track {
+    background: #dfe6e9;
+    border-radius: 12px;
+  }
+  #game::-webkit-scrollbar-thumb {
+    background-color: #74b9ff;
+    border-radius: 12px;
+  }
+
+  /* 드릴 */
+  #drill {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(145deg, #636e72, #2d3436);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 60px;
+    font-weight: 900;
+    color: white;
+    top: 50px;
+    left: 130px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    user-select: none;
+    z-index: 10;
+  }
+  #drill:hover {
+    transform: scale(1.15);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.65);
+  }
+  #drill.broken {
+    background: linear-gradient(145deg, #c0392b, #e74c3c);
+    box-shadow: 0 0 20px #e74c3c;
+  }
+
+  /* 땅 레이어 */
+  #ground {
+    position: relative;
+    margin-top: 160px;
+    width: 100%;
+    border-radius: 0 0 15px 15px;
+    overflow: hidden;
+  }
+  .layer {
+    width: 100%;
+    height: 40px;
+    border-top: 1px solid #b2bec3;
+    transition: background-color 0.4s ease;
+  }
+  .dirt { background: #a0522d; }
+  .gravel { background: #636e72; }
+  .stone { background: #2d3436; }
+  .destroyed { background: #b2bec3 !important; }
+  .bedrock { background: #000 !important; }
+  .broken { background: #c0392b !important; }
+
+  /* 업그레이드 패널 */
+  #upgrades {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+  .upgrade-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #dfe6e9;
+    padding: 18px 20px;
+    border-radius: 15px;
+    box-shadow: inset 0 0 10px #b2bec3;
+    font-weight: 600;
+    font-size: 15px;
+    color: #2d3436;
+  }
+
+  /* 업그레이드 버튼 */
+  button {
+    padding: 14px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #0984e3, #74b9ff);
+    color: white;
+    box-shadow: 0 6px 16px rgba(9, 132, 227, 0.7);
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  button:hover:not(:disabled) {
+    background: linear-gradient(45deg, #74b9ff, #0984e3);
+    transform: scale(1.07);
+  }
+  button:disabled {
+    background: #b2bec3;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: #636e72;
+  }
+
+  /* 업그레이드 요구사항 텍스트 */
+  #powerUpgradeReq, #durabilityUpgradeReq {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0984e3;
+    text-align: center;
+  }
+
+  /* 인벤토리 */
+  #inventory {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    
+    gap: 5px;
+  }
+  .inventory-slot {
+    background: #f7f9fc;
+    border-radius: 15px;
+    border: 2px solid #74b9ff;
+    height: 110px;
+    width: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2d3436;
+    box-shadow: 0 5px 14px rgba(116, 185, 255, 0.55);
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  .inventory-slot:hover {
+    background-color: #dff1ff;
+  }
+</style>
+
+</head>
+<body>
+
+<div id="left-panel">
+  <div id="upgrades">
+    <div class="upgrade-block">
+      <button onclick="upgradePower()">💪 강도 업그레이드</button>
+      <div id="powerUpgradeReq"></div> <!-- 재료 표시 영역 -->
+    </div>
+    <div class="upgrade-block">
+      <button onclick="upgradeDurability()">🛠 내구도 업그레이드</button>
+      <div id="durabilityUpgradeReq"></div> <!-- 재료 표시 영역 -->
+    </div>
+  </div>
+</div>
+
+
+<div id="center-panel">
+  <h1>땅파기 시뮬 (Made by 범서)</h1>
+  <h1>Ver 1.12 pre release</h1>
+  <div id="status">
+    내구도: <span id="durability">9</span> |
+    강도: <span id="power">1</span> |
+    💰: <span id="money">0</span>
+  </div>
+  <div id="game">
+    <div id="drill">🔩</div>
+    <div id="ground"></div>
+  </div>
+</div>
+
+<div id="right-panel">
+  <h2>--- 인벤토리 ---</h2>
+  <div id="inventory"></div>
+</div>
+
+<script>
+  const drill = document.getElementById("drill");
+  const game = document.getElementById("game");
+  const ground = document.getElementById("ground");
+  const durabilityDisplay = document.getElementById("durability");
+  const powerDisplay = document.getElementById("power");
+  const moneyDisplay = document.getElementById("money");
+  const inventoryUI = document.getElementById("inventory");
+  const powerUpgradeReqUI = document.getElementById("powerUpgradeReq");
+  const durabilityUpgradeReqUI = document.getElementById("durabilityUpgradeReq");
+
+  const DRILL_SPEED = 2;
+  const DRILL_HEIGHT = 50;
+  let MAX_DURABILITY = 9;
+  let drillPower = 1;
+  let money = 0;
+  let isFalling = false;
+  let durability = MAX_DURABILITY;
+  let layers = [];
+  let inventory = [];
+
+  const MAX_STACK = 10;
+  const INVENTORY_SIZE = 30;
+
+  // 강도 업그레이드 단계별 정보 (레벨 0부터 시작)
+  const DrillPowerUpgrades = [
+    { name: "power1", powerAddition: 1, need: { 흙: 10, 부싯돌: 1 }, money: 10 },
+    { name: "power2", powerAddition: 3, need: { 흙: 20, 부싯돌: 5, 고대흙: 1, }, money: 30 },
+    { name: "power3", powerAddition: 3, need: { 고대흙: 3, 자갈: 20, 석탄: 1}, money: 1 },
+    // 필요한 만큼 추가 가능
+  ];
+  let currentPowerLevel = 0;
+
+
+  // 내구도 업그레이드 단계별 정보
+  const DurabilityUpgrades = [
+    { name: "durability1", durabilityAddition: 9, money: 20 },
+    { name: "durability2", durabilityAddition: 9, money: 100 },
+    // 추가 가능
+  ];
+  let currentDurabilityLevel = 0;
+
+
+  
+  // 광물 드랍 확률
+  const DropChances = {
+    Dirt: [
+      { item: "흙", chance: 0.7 },
+      { item: "부싯돌", chance: 0.2 },
+      { item: "고대흙", chance: 0.1 }
+    ],
+    Gravel: [
+      { item: "자갈", chance: 0.6 },
+      { item: "석탄", chance: 0.25 },
+      { item: "은", chance: 0.15 }
+    ],
+    Stone: [
+      { item: "돌", chance: 0.6 },
+      { item: "철", chance: 0.2 },
+      { item: "다이아몬드", chance: 0.1 },
+      { item: "루비", chance: 0.1 }
+    ]
+  };
+
+  // 광물 가격(돈 환산)
+  const DigPrices = {
+    흙: { materialName: "흙", diggedPrice: 1 },
+    부싯돌: { materialName: "부싯돌", diggedPrice: 3 },
+    고대흙: { materialName: "고대흙", diggedPrice: 7 },
+    자갈: { materialName: "자갈", diggedPrice: 2 },
+    석탄: { materialName: "석탄", diggedPrice: 4 },
+    은: { materialName: "은", diggedPrice: 6 },
+    돌: { materialName: "돌", diggedPrice: 2 },
+    철: { materialName: "철", diggedPrice: 5 },
+    다이아몬드: { materialName: "다이아몬드", diggedPrice: 10 },
+    루비: { materialName: "루비", diggedPrice: 15 }
+  };
+
+  // 광물 등장 시 인벤토리에 추가 및 돈 획득
+  function addItemToInventory(item) {
+    for (let slot of inventory) {
+      if (slot.item === item && slot.count < MAX_STACK) {
+        slot.count++;
+        updateInventoryUI();
+        if (DigPrices[item]) money += DigPrices[item].diggedPrice;
+        updateUI();
+        return;
+      }
+    }
+    if (inventory.length < INVENTORY_SIZE) {
+      inventory.push({ item, count: 1 });
+      updateInventoryUI();
+      if (DigPrices[item]) money += DigPrices[item].diggedPrice;
+      updateUI();
+    }
+  }
+
+  // 광물 드랍 확률 계산
+  function getRandomDrop(type) {
+    const drops = DropChances[type];
+    const rand = Math.random();
+    let total = 0;
+    for (let drop of drops) {
+      total += drop.chance;
+      if (rand <= total) return drop.item;
+    }
+    return null;
+  }
+
+  // 지면 생성
+  function createGround() {
+    ground.innerHTML = "";
+    layers = [];
+
+    const totalLayers = [
+      { count: 10, type: "Dirt", hp: 3 },
+      { count: 30, type: "Gravel", hp: 5 },
+      { count: 30, type: "Stone", hp: 7 }
+    ];
+
+    totalLayers.forEach(({ count, type, hp }) => {
+      for (let i = 0; i < count; i++) {
+        const div = document.createElement("div");
+        div.classList.add("layer", type.toLowerCase());
+        div.dataset.hp = hp;
+        div.dataset.type = type;
+        ground.appendChild(div);
+        layers.push(div);
+      }
+    });
+
+    const bedrock = document.createElement("div");
+    bedrock.classList.add("layer", "bedrock");
+    bedrock.dataset.hp = "∞";
+    ground.appendChild(bedrock);
+    layers.push(bedrock);
+
+    drill.style.top = "50px";
+    game.scrollTop = 0;
+    durability = MAX_DURABILITY;
+    updateUI();
+    drill.classList.remove("broken");
+  }
+
+    function updateUI() {
+    durabilityDisplay.textContent = durability;
+    powerDisplay.textContent = drillPower;
+    moneyDisplay.textContent = money;
+
+    if (currentPowerLevel < DrillPowerUpgrades.length) {
+      const nextPower = DrillPowerUpgrades[currentPowerLevel];
+      const needs = Object.entries(nextPower.need)
+        .map(([k,v]) => `${k} x${v}`)
+        .join(", ");
+      powerUpgradeReqUI.textContent = `${needs}, 💰${nextPower.money}`;
+    } else {
+      powerUpgradeReqUI.textContent = "최대 레벨 달성";
+    }
+
+    if (currentDurabilityLevel < DurabilityUpgrades.length) {
+      const nextDur = DurabilityUpgrades[currentDurabilityLevel];
+      durabilityUpgradeReqUI.textContent = `💰${nextDur.money}`;
+    } else {
+      durabilityUpgradeReqUI.textContent = "최대 레벨 달성";
+    }
+  }
+  // UI 업데이트 (내구도, 강도, 돈 및 업그레이드 버튼 텍스트)
+function updateUI() {
+  durabilityDisplay.textContent = durability;
+  powerDisplay.textContent = drillPower;
+  moneyDisplay.textContent = money;
+
+  if (currentPowerLevel < DrillPowerUpgrades.length) {
+    const nextPower = DrillPowerUpgrades[currentPowerLevel];
+    const needs = Object.entries(nextPower.need)
+      .map(([k,v]) => `${k} x${v}`)
+      .join(", ");
+    powerUpgradeReqUI.textContent = `${needs}, 💰${nextPower.money}`;
+  } else {
+    powerUpgradeReqUI.textContent = "최대 레벨 달성";
+  }
+
+  if (currentDurabilityLevel < DurabilityUpgrades.length) {
+    const nextDur = DurabilityUpgrades[currentDurabilityLevel];
+    durabilityUpgradeReqUI.textContent = `💰${nextDur.money}`;
+  } else {
+    durabilityUpgradeReqUI.textContent = "최대 레벨 달성";
+  }
+}
+
+// 내구도 업그레이드 함수
+function upgradeDurability() {
+  if (currentDurabilityLevel >= DurabilityUpgrades.length) {
+    alert("내구도 업그레이드는 최대 레벨입니다.");
+    return;
+  }
+  const upgrade = DurabilityUpgrades[currentDurabilityLevel];
+
+  if (money < upgrade.money) {
+    alert(`돈이 부족합니다. 필요 금액: ${upgrade.money}`);
+    return;
+  }
+
+  money -= upgrade.money;
+  MAX_DURABILITY += upgrade.durabilityAddition;
+  durability = MAX_DURABILITY;
+  currentDurabilityLevel++;
+
+  updateUI();
+  alert(`내구도 +${upgrade.durabilityAddition}! 현재 내구도: ${MAX_DURABILITY}`);
+}
+
+  // 인벤토리 UI 업데이트
+  function updateInventoryUI() {
+    inventoryUI.innerHTML = "";
+    for (let i = 0; i < INVENTORY_SIZE; i++) {
+      const slot = document.createElement("div");
+      slot.className = "inventory-slot";
+      if (inventory[i]) {
+        slot.textContent = `${inventory[i].item} x${inventory[i].count}`;
+      }
+      inventoryUI.appendChild(slot);
+    }
+  }
+
+  // 드릴 떨어뜨리기 동작
+  function dropDrill() {
+    if (isFalling || durability <= 0) return;
+    isFalling = true;
+    let top = parseInt(drill.style.top);
+    const fallInterval = setInterval(() => {
+      top += DRILL_SPEED;
+      drill.style.top = `${top}px`;
+      game.scrollTop = Math.max(0, top - 400);
+      const drillBottom = top + DRILL_HEIGHT;
+      for (let i = 0; i < layers.length; i++) {
+        const layer = layers[i];
+        const layerTop = ground.offsetTop + i * 40;
+        const layerBottom = layerTop + 40;
+
+        if (!layer.classList.contains("destroyed") && drillBottom >= layerTop && drillBottom <= layerBottom + 5) {
+          let hp = layer.dataset.hp === "∞" ? Infinity : parseInt(layer.dataset.hp);
+          if (hp !== Infinity) {
+            hp -= drillPower;
+            layer.dataset.hp = hp;
+            if (hp <= 0) {
+              layer.classList.add("destroyed");
+              const drop = getRandomDrop(layer.dataset.type);
+              if (drop) addItemToInventory(drop);
+            }
+          }
+
+          durability--;
+          updateUI();
+          clearInterval(fallInterval);
+
+          let bounce = 0;
+          const bounceInterval = setInterval(() => {
+            if (bounce < 5) {
+              top -= 5;
+              bounce++;
+              drill.style.top = `${top}px`;
+              game.scrollTop = Math.max(0, top - 400);
+            } else {
+              clearInterval(bounceInterval);
+              isFalling = false;
+              if (durability <= 0) drillBroken();
+            }
+          }, 20);
+          return;
+        }
+      }
+
+      if (top >= game.scrollHeight - DRILL_HEIGHT) {
+        clearInterval(fallInterval);
+        isFalling = false;
+      }
+    }, 20);
+  }
+
+  // 드릴 부서짐 처리
+  function drillBroken() {
+    drill.classList.add("broken");
+    alert("💥 드릴이 부서졌습니다! 땅이 복구됩니다.");
+    setTimeout(() => {
+      createGround();
+    }, 1000);
+  }
+
+  // 강도 업그레이드 함수 (단계별 조건 검사 및 실행)
+  function upgradePower() {
+    if (currentPowerLevel >= DrillPowerUpgrades.length) {
+      alert("강도 업그레이드는 최대 레벨입니다.");
+      return;
+    }
+    const upgrade = DrillPowerUpgrades[currentPowerLevel];
+
+    // 재료 검사
+    for (const itemName in upgrade.need) {
+      const requiredCount = upgrade.need[itemName];
+      const invItem = inventory.find(i => i.item === itemName);
+      if (!invItem || invItem.count < requiredCount) {
+        alert(`재료 부족: ${itemName} x${requiredCount}`);
+        return;
+      }
+    }
+    // 돈 검사
+    if (money < upgrade.money) {
+      alert(`돈이 부족합니다. 필요 금액: ${upgrade.money}`);
+      return;
+    }
+
+    // 재료 차감
+    for (const itemName in upgrade.need) {
+      const requiredCount = upgrade.need[itemName];
+      const invItem = inventory.find(i => i.item === itemName);
+      invItem.count -= requiredCount;
+      if (invItem.count <= 0) {
+        inventory = inventory.filter(i => i.count > 0);
+      }
+    }
+    money -= upgrade.money;
+
+    // 강도 증가
+    drillPower += upgrade.powerAddition;
+    currentPowerLevel++;
+
+    updateInventoryUI();
+    updateUI();
+    alert(`드릴 강도 +${upgrade.powerAddition}! 현재 강도: ${drillPower}`);
+  }
+
+  // 내구도 업그레이드 함수 (단계별 조건 검사 및 실행)
+  function upgradeDurability() {
+    if (currentDurabilityLevel >= DurabilityUpgrades.length) {
+      alert("내구도 업그레이드는 최대 레벨입니다.");
+      return;
+    }
+    const upgrade = DurabilityUpgrades[currentDurabilityLevel];
+
+    // 돈 검사
+    if (money < upgrade.money) {
+      alert(`돈이 부족합니다. 필요 금액: ${upgrade.money}`);
+      return;
+    }
+
+    money -= upgrade.money;
+    MAX_DURABILITY += upgrade.durabilityAddition;
+    durability = MAX_DURABILITY;
+    currentDurabilityLevel++;
+
+    updateUI();
+    alert(`내구도 +${upgrade.durabilityAddition}! 현재 내구도: ${MAX_DURABILITY}`);
+  }
+
+  drill.addEventListener("click", dropDrill);
+
+  createGround();
+  updateUI();
+</script>
+
+</body>
+</html>
