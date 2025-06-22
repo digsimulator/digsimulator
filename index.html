@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>드릴 업그레이드 시스템</title>
  <style>
   /* 배경 및 기본 폰트 */
@@ -360,20 +361,26 @@
 }
 
 @media (max-width: 768px) {
+  html, body {
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
   body {
     flex-direction: column;
     align-items: center;
     padding: 20px;
+    padding-bottom: 180px;  /* 💡 이게 핵심! */
   }
 
   #left-panel, #center-panel {
-    width: 100%;
-    max-width: 100%;
+    width: 90%;
+    max-width: 600px;
   }
 
-  /* 핵심 수정: 충분한 하단 여백 확보 */
   #center-panel {
-    margin-bottom: 220px; /* 반드시 right-panel 높이보다 커야 함 */
+    margin-bottom: 0;  /* 중복 여백 제거 */
   }
 
   #right-panel {
@@ -383,28 +390,27 @@
     width: 100%;
     height: 160px;
     background: #fff;
-    z-index: 1000;
-    display: flex;
-    flex-direction: row;
-    padding: 10px;
-    gap: 6px;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+    z-index: 999;
     overflow-x: auto;
     overflow-y: hidden;
-    border-top: 2px solid #ccc;
-    box-shadow: 0 -4px 8px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 0;
   }
 
   #inventory {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5열 고정 */
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
-    justify-items: center;
     width: 100%;
   }
 
   .inventory-slot {
-    width: 60px; /* 줄여서 절대 넘치지 않게 */
-    height: 60px;
+    height: 70px;
+    width: 70px;
     font-size: 12px;
   }
 }
@@ -414,7 +420,6 @@
 
 </head>
 <body>
-
 
 <div id="center-panel">
   <h1>땅파기 시뮬 (Made by 범서)</h1>
